@@ -906,3 +906,76 @@ body { background: #050608; }
 input[type="number"]::-webkit-inner-spin-button,
 input[type="number"]::-webkit-outer-spin-button { -webkit-appearance: none; margin: 0; }
 input[type="number"] { appearance: textfield; -moz-appearance: textfield; }
+
+/* v0.3.1 — polish pass */
+/* Remove the prototype-like red top strokes. */
+.app-header::before,
+.test-panel::before { display: none !important; }
+
+/* Give Ficha Rápida its own restrained dark-wine Tech Noir identity. */
+.test-panel {
+  background:
+    linear-gradient(rgba(255,255,255,.010) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255,255,255,.008) 1px, transparent 1px),
+    radial-gradient(circle at 88% 4%, rgba(150,21,31,.16), transparent 34%),
+    linear-gradient(180deg, #130b0e 0%, #0f0a0c 17%, #0b0c0f 55%, #090a0d 100%);
+  background-size: 24px 24px, 24px 24px, auto, auto;
+  border-left-color: rgba(127,31,39,.32);
+}
+.test-panel-header {
+  background: linear-gradient(180deg, rgba(31,13,17,.97), rgba(17,11,14,.97));
+  border-bottom-color: rgba(132,39,47,.32);
+}
+.test-panel-header strong {
+  color: #f2ecee;
+  font-size: 15.5px;
+  letter-spacing: .085em;
+}
+.attribute-config {
+  background: linear-gradient(180deg, rgba(28,13,17,.78), rgba(15,12,15,.76));
+  border-bottom-color: rgba(116,38,45,.28);
+}
+.section-line { color: #806f75; }
+.section-line span:last-child { background: linear-gradient(90deg, rgba(119,44,52,.52), transparent); }
+.skill-matrix { background: linear-gradient(180deg, rgba(21,10,13,.16), transparent 22%); }
+.test-panel-footer {
+  background: #0e090b;
+  border-top-color: rgba(116,38,45,.28);
+}
+
+/* Attribute acronyms were too tiny at real Owlbear scale. */
+.attribute-cell {
+  height: 53px;
+  grid-template-rows: 19px 1fr;
+  border-color: #33242a;
+  background: #0d0a0c;
+}
+.attribute-cell > span {
+  color: #b6a9ae;
+  background: #171014;
+  border-bottom-color: #33242a;
+  font-size: 9.5px;
+  font-weight: 800;
+  letter-spacing: .095em;
+}
+.attribute-score {
+  height: 34px;
+  font-size: 14px;
+}
+.attribute-cell:focus-within {
+  border-color: rgba(219,48,59,.62);
+  box-shadow: 0 0 0 2px rgba(181,29,38,.07), inset 0 0 18px rgba(181,29,38,.025);
+}
+
+/* Pixel-perfect delete control: no browser padding, true center. */
+.delete-entry {
+  padding: 0;
+  line-height: 0;
+  align-items: center;
+  justify-items: center;
+}
+.delete-entry svg {
+  display: block;
+  margin: 0;
+  transform: translate(0, 0);
+}

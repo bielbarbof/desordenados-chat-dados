@@ -202,9 +202,6 @@ function canDeleteEntry(entry) {
 async function deleteEntry(entryId) {
   const entry = state.entries.find((item) => item.id === entryId);
   if (!entry || !canDeleteEntry(entry)) return;
-  const label = entry.kind === "roll" ? "esta rolagem" : "esta mensagem";
-  if (!confirm(`Apagar ${label}?`)) return;
-
   mergeDeletedIds([entryId]);
   if (!OBR.isAvailable) return;
   try {
