@@ -1,0 +1,15 @@
+{
+  "name": "Desordenados — Chat & Dados",
+  "version": "0.1.0",
+  "manifest_version": 1,
+  "description": "Chat e rolador de dados para mesas de Ordem Paranormal no Owlbear Rodeo.",
+  "author": "Desordenados",
+  "icon": "/icon.svg",
+  "action": {
+    "title": "Chat & Dados",
+    "icon": "/icon.svg",
+    "popover": "/",
+    "height": 760,
+    "width": 336
+  }
+}

@@ -1,0 +1,89 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="theme-color" content="#111014" />
+  <title>Desordenados — Chat & Dados</title>
+  <link rel="stylesheet" href="./styles.css" />
+</head>
+<body>
+  <main id="app" class="app-shell">
+    <header class="app-header">
+      <div class="identity-block">
+        <strong>CHAT & DADOS</strong>
+        <button id="identityButton" class="identity-button" title="Alterar nome do personagem">Conectando…</button>
+      </div>
+      <button id="testToggle" class="test-toggle">TESTE</button>
+    </header>
+
+    <section id="feed" class="feed" aria-live="polite"></section>
+
+    <section id="testBuilder" class="test-builder hidden" aria-label="Construtor de teste">
+      <div class="builder-heading">
+        <div>
+          <strong>Teste de Ordem</strong>
+          <small>d20 em pool + bônus</small>
+        </div>
+        <button id="testClose" class="icon-button" aria-label="Fechar">×</button>
+      </div>
+
+      <label>
+        Perícia
+        <select id="skillSelect"></select>
+      </label>
+
+      <div class="builder-grid">
+        <label>
+          Atributo
+          <select id="attributeSelect"></select>
+        </label>
+        <label>
+          Valor
+          <input id="attributeValue" type="number" min="0" max="10" value="2" />
+        </label>
+      </div>
+
+      <label>
+        Bônus total
+        <input id="skillBonus" type="number" min="-50" max="100" value="5" />
+      </label>
+
+      <div id="builderRule" class="builder-rule"></div>
+      <button id="orderRollButton" class="primary-button">Rolar teste</button>
+    </section>
+
+    <section class="composer-wrap">
+      <div class="format-row">
+        <button class="format-label" type="button">Formato⌄</button>
+        <span class="format-spacer"></span>
+        <button id="boldButton" type="button" title="Negrito"><b>B</b></button>
+        <button id="italicButton" type="button" title="Itálico"><i>I</i></button>
+        <button id="codeButton" type="button" title="Código">&lt;/&gt;</button>
+      </div>
+      <textarea id="messageInput" placeholder="Digite uma mensagem\nou /r 3d20+5" aria-label="Mensagem"></textarea>
+      <div id="errorBanner" class="error-banner hidden"></div>
+    </section>
+
+    <section class="dice-tray">
+      <div id="diceRow" class="dice-row"></div>
+      <div class="tray-controls">
+        <div class="stepper">
+          <button id="countMinus" type="button">−</button>
+          <strong id="diceCount">1</strong>
+          <button id="countPlus" type="button">+</button>
+        </div>
+        <label class="modifier-input">
+          <span>bônus</span>
+          <input id="modifierInput" type="number" value="0" />
+        </label>
+        <button id="keepButton" class="keep-button" disabled title="Alternar entre manter o maior e o menor">KH</button>
+        <button id="rollButton" class="roll-button">Rolar</button>
+      </div>
+    </section>
+
+    <div id="loading" class="loading-overlay">Conectando ao Owlbear…</div>
+  </main>
+  <script type="module" src="./app.js"></script>
+</body>
+</html>
