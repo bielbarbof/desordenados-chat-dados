@@ -1,12 +1,12 @@
 {
-  "name": "Desordenados — Chat & Dados",
-  "version": "0.2.0",
+  "name": "DSO Chat",
+  "version": "0.2.1",
   "manifest_version": 1,
-  "description": "Chat e rolador de dados para Ordem Paranormal no Owlbear Rodeo — interface Tech Noir.",
+  "description": "Chat e rolador de dados para Ordem Paranormal no Owlbear Rodeo — interface DSO Tech Noir.",
   "author": "Desordenados",
   "icon": "/icon.svg",
   "action": {
-    "title": "Chat & Dados",
+    "title": "DSO Chat",
     "icon": "/icon.svg",
     "popover": "/",
     "height": 800,

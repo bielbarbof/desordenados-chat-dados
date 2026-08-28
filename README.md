@@ -1,27 +1,24 @@
-# Desordenados — Chat & Dados v0.2.0
+# DSO Chat v0.2.1
 
-Extensão para Owlbear Rodeo com chat em tempo real e rolador adaptado para Ordem Paranormal.
+Extensão para Owlbear Rodeo com chat em tempo real e rolador adaptado para Ordem Paranormal, usando a identidade visual Tech Noir da DSO.
 
-## v0.2.0 — Tech Noir
+## v0.2.1 — Refinamento do chat
 
-Esta versão mantém todas as funções da beta e refaz a interface:
-
-- dark mode monocromático;
-- detalhes de estado em vermelho;
-- escala geral maior e mais legível;
-- cards de chat e rolagem redesenhados;
-- resultado da rolagem com maior hierarquia visual;
-- bandeja de dados maior;
-- novos ícones wireframe para d4, d6, d8, d10, d12 e d20;
-- controles de quantidade, bônus e KH/KL ampliados;
-- construtor de Teste de Ordem redesenhado;
-- remoção do botão "Formato";
-- novo ícone da extensão;
-- popover ampliado para 380 × 800 px.
+- título simplificado para **DSO CHAT**;
+- removido o tópico `DESORDENADOS // DSO`;
+- removida a sigla visual `MSG` dos cards de mensagem;
+- removidos os controles de formatação `B`, `I` e `</>`;
+- resultado natural 20 agora transforma o card de rolagem em um estado crítico verde;
+- botão de lixeira aparece no hover das mensagens e rolagens que podem ser apagadas;
+- jogadores podem apagar apenas as próprias entradas;
+- Mestres podem apagar qualquer mensagem ou rolagem;
+- exclusões são sincronizadas com participantes conectados;
+- IDs apagados são guardados localmente e sincronizados no retorno à sala para reduzir o risco de mensagens excluídas reaparecerem;
+- todas as funções de chat, dados, Teste de Ordem, KH/KL, histórico local e comandos `/r` foram preservadas.
 
 ## Atualizar a versão hospedada
 
-No repositório GitHub usado pelo Render, substitua os arquivos antigos pelos arquivos desta versão e faça o commit. O Render fará um novo deploy e o endereço do `manifest.json` continuará o mesmo.
+No mesmo repositório GitHub usado pelo Render, envie os arquivos desta versão por cima dos antigos e faça um novo commit. Depois, faça o deploy no Render. O endereço do `manifest.json` continua o mesmo.
 
 Arquivos para subir:
 
@@ -32,8 +29,12 @@ Arquivos para subir:
 - `manifest.json`
 - `styles.css`
 - `vercel.json`
+- `CHANGELOG.md`
+- `README.md`
 
-Depois do deploy, recarregue a sala do Owlbear Rodeo.
+## Exclusão de mensagens
+
+O histórico ainda é local, sem banco de dados central. A exclusão remove a entrada do histórico local e envia um evento de remoção aos jogadores conectados. A v0.2.1 também mantém uma lista local de IDs apagados e a inclui na sincronização de histórico.
 
 ## Rolagens
 

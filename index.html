@@ -4,15 +4,14 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <meta name="theme-color" content="#090a0c" />
-  <title>Desordenados — Chat & Dados</title>
+  <title>DSO Chat</title>
   <link rel="stylesheet" href="./styles.css" />
 </head>
 <body>
   <main id="app" class="app-shell">
     <header class="app-header">
       <div class="brand-block">
-        <div class="brand-kicker"><span class="status-dot"></span>DESORDENADOS // DSO</div>
-        <strong>CHAT & DADOS</strong>
+        <strong>DSO CHAT</strong>
         <button id="identityButton" class="identity-button" title="Alterar nome do personagem">Conectando…</button>
       </div>
       <button id="testToggle" class="test-toggle" type="button" aria-label="Abrir construtor de teste">
@@ -60,11 +59,6 @@
     <section class="composer-wrap">
       <div class="composer-bar">
         <span class="composer-status">MENSAGEM // <b>ENTER</b> ENVIA</span>
-        <div class="composer-tools" aria-label="Formatação de mensagem">
-          <button id="boldButton" type="button" title="Negrito"><b>B</b></button>
-          <button id="italicButton" type="button" title="Itálico"><i>I</i></button>
-          <button id="codeButton" type="button" title="Código">&lt;/&gt;</button>
-        </div>
       </div>
       <textarea id="messageInput" placeholder="Mensagem…  /r 3d20+5" aria-label="Mensagem"></textarea>
       <div id="errorBanner" class="error-banner hidden"></div>

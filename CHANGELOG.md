@@ -1,5 +1,25 @@
 # Changelog
 
+## 0.2.1 — DSO Chat
+
+### Interface
+- Cabeçalho simplificado para **DSO CHAT**.
+- Removido `DESORDENADOS // DSO`.
+- Removido o marcador `MSG` dos cards.
+- Removidos os botões de formatação `B`, `I` e `</>`.
+- Mantida a identidade Tech Noir monocromática com acentos vermelhos.
+
+### Rolagens
+- Natural 20 agora ativa um estado de crítico verde no card inteiro.
+- O resultado, o dado mantido e os detalhes recebem acentos verdes enquanto o restante da UI continua na linguagem DSO.
+
+### Chat
+- Adicionado botão de lixeira por mensagem/rolagem.
+- Jogadores podem apagar as próprias entradas.
+- Mestres podem apagar qualquer entrada.
+- Exclusões são transmitidas aos participantes conectados.
+- IDs apagados são persistidos localmente e sincronizados junto do histórico para impedir reidratação simples de mensagens removidas.
+
 ## 0.2.0 — Tech Noir
 
 ### Visual

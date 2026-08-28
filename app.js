@@ -27,6 +27,7 @@ const state = {
   identity: { id: "preview-user", connectionId: "preview-connection", name: "Agente", color: "#b51d26", role: "PLAYER" },
   displayName: "Agente",
   entries: [],
+  deletedIds: new Set(),
   roomId: "preview-room",
   selectedSides: 20,
   count: 1,
@@ -91,6 +92,25 @@ function aliasKey() {
   return `desordenados.chat-dados.alias.${state.roomId}.${state.identity.id}`;
 }
 
+function deletedKey() {
+  return `desordenados.chat-dados.deleted.${state.roomId}`;
+}
+
+function loadDeletedIds() {
+  try {
+    const parsed = JSON.parse(localStorage.getItem(deletedKey()) || "[]");
+    return new Set(Array.isArray(parsed) ? parsed.filter((id) => typeof id === "string").slice(-1000) : []);
+  } catch {
+    return new Set();
+  }
+}
+
+function saveDeletedIds() {
+  try {
+    localStorage.setItem(deletedKey(), JSON.stringify([...state.deletedIds].slice(-1000)));
+  } catch {}
+}
+
 function loadHistory() {
   try {
     const parsed = JSON.parse(localStorage.getItem(historyKey()) || "[]");
@@ -106,10 +126,49 @@ function saveHistory() {
 
 function mergeEntries(incoming) {
   const map = new Map();
-  [...state.entries, ...incoming].forEach((entry) => map.set(entry.id, entry));
-  state.entries = [...map.values()].sort((a,b) => a.createdAt - b.createdAt).slice(-MAX_HISTORY);
+  [...state.entries, ...incoming].forEach((entry) => {
+    if (entry?.id && !state.deletedIds.has(entry.id)) map.set(entry.id, entry);
+  });
+  state.entries = [...map.values()]
+    .filter((entry) => !state.deletedIds.has(entry.id))
+    .sort((a,b) => a.createdAt - b.createdAt)
+    .slice(-MAX_HISTORY);
   saveHistory();
   renderFeed();
+}
+
+function mergeDeletedIds(incoming = []) {
+  let changed = false;
+  for (const id of incoming) {
+    if (typeof id !== "string" || state.deletedIds.has(id)) continue;
+    state.deletedIds.add(id);
+    changed = true;
+  }
+  if (!changed) return;
+  state.entries = state.entries.filter((entry) => !state.deletedIds.has(entry.id));
+  saveDeletedIds();
+  saveHistory();
+  renderFeed();
+}
+
+function canDeleteEntry(entry) {
+  return state.identity.role === "GM" || entry.authorId === state.identity.id;
+}
+
+async function deleteEntry(entryId) {
+  const entry = state.entries.find((item) => item.id === entryId);
+  if (!entry || !canDeleteEntry(entry)) return;
+  const label = entry.kind === "roll" ? "esta rolagem" : "esta mensagem";
+  if (!confirm(`Apagar ${label}?`)) return;
+
+  mergeDeletedIds([entryId]);
+  if (!OBR.isAvailable) return;
+  try {
+    await OBR.broadcast.sendMessage(CHAT_CHANNEL, { type: "delete", entryId }, { destination: "REMOTE" });
+  } catch (error) {
+    console.error(error);
+    setError("A mensagem foi apagada neste navegador, mas a exclusão não foi sincronizada com os outros jogadores.");
+  }
 }
 
 function escapeHtml(value) {
@@ -152,15 +211,18 @@ function rollDetailsHtml(entry) {
 function entryHtml(entry) {
   const author = escapeHtml(entry.authorName);
   const time = relativeTime(entry.createdAt);
-  const meta = `<header><span class="author-line"><span class="author-signal"></span><strong>${author}</strong></span><time>${time}</time></header>`;
+  const deleteControl = canDeleteEntry(entry)
+    ? `<button class="delete-entry" type="button" data-entry-id="${escapeHtml(entry.id)}" aria-label="Apagar ${entry.kind === "roll" ? "rolagem" : "mensagem"}" title="Apagar"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h16M9 7V4h6v3m-8 0 1 13h8l1-13M10 10v7m4-7v7"/></svg></button>`
+    : "";
+  const meta = `<header><span class="author-line"><span class="author-signal"></span><strong>${author}</strong></span><div class="card-actions"><time>${time}</time>${deleteControl}</div></header>`;
   if (entry.kind === "chat") {
-    return `<article class="message-card chat-card">
+    return `<article class="message-card chat-card" data-entry-id="${escapeHtml(entry.id)}">
       ${meta}
       <div class="chat-text">${escapeHtml(entry.text)}</div>
     </article>`;
   }
   const naturalClass = entry.natural === 20 ? "natural-20" : entry.natural === 1 ? "natural-1" : "";
-  return `<article class="message-card roll-card ${naturalClass}">
+  return `<article class="message-card roll-card ${naturalClass}" data-entry-id="${escapeHtml(entry.id)}">
     ${meta}
     <div class="roll-title">${escapeHtml(entry.title)}</div>
     ${entry.subtitle ? `<div class="roll-subtitle">${escapeHtml(entry.subtitle)}</div>` : ""}
@@ -393,7 +455,8 @@ async function sendComposer() {
 async function initializeOwlbear() {
   if (!OBR.isAvailable) {
     state.roomId = "preview-room";
-    state.entries = loadHistory();
+    state.deletedIds = loadDeletedIds();
+    state.entries = loadHistory().filter((entry) => !state.deletedIds.has(entry.id));
     loadAlias();
     renderFeed();
     loading.classList.add("hidden");
@@ -403,7 +466,8 @@ async function initializeOwlbear() {
   OBR.onReady(async () => {
     state.identity = await getIdentity();
     state.roomId = OBR.room.id;
-    state.entries = loadHistory();
+    state.deletedIds = loadDeletedIds();
+    state.entries = loadHistory().filter((entry) => !state.deletedIds.has(entry.id));
     loadAlias();
     renderFeed();
     loading.classList.add("hidden");
@@ -411,17 +475,23 @@ async function initializeOwlbear() {
     OBR.broadcast.onMessage(CHAT_CHANNEL, (event) => {
       const payload = event.data;
       if (payload?.type === "entry" && payload.entry) mergeEntries([payload.entry]);
+      if (payload?.type === "delete" && payload.entryId) mergeDeletedIds([payload.entryId]);
     });
 
     OBR.broadcast.onMessage(SYNC_CHANNEL, async (event) => {
       const payload = event.data;
       if (payload?.type === "request" && payload.requester && payload.requester !== state.identity.connectionId) {
+        if (Array.isArray(payload.deletedIds)) mergeDeletedIds(payload.deletedIds);
         await OBR.broadcast.sendMessage(SYNC_CHANNEL, {
-          type: "history", target: payload.requester, entries: state.entries.slice(-MAX_SYNC),
+          type: "history",
+          target: payload.requester,
+          entries: state.entries.slice(-MAX_SYNC),
+          deletedIds: [...state.deletedIds].slice(-1000),
         }, { destination: "REMOTE" });
       }
-      if (payload?.type === "history" && payload.target === state.identity.connectionId && Array.isArray(payload.entries)) {
-        mergeEntries(payload.entries);
+      if (payload?.type === "history" && payload.target === state.identity.connectionId) {
+        if (Array.isArray(payload.deletedIds)) mergeDeletedIds(payload.deletedIds);
+        if (Array.isArray(payload.entries)) mergeEntries(payload.entries);
       }
     });
 
@@ -430,7 +500,11 @@ async function initializeOwlbear() {
       loadAlias();
     });
 
-    await OBR.broadcast.sendMessage(SYNC_CHANNEL, { type: "request", requester: state.identity.connectionId }, { destination: "REMOTE" });
+    await OBR.broadcast.sendMessage(SYNC_CHANNEL, {
+      type: "request",
+      requester: state.identity.connectionId,
+      deletedIds: [...state.deletedIds].slice(-1000),
+    }, { destination: "REMOTE" });
   });
 }
 
@@ -458,19 +532,11 @@ messageInput.addEventListener("keydown", (event) => {
   }
 });
 
-function wrapSelection(markerLeft, markerRight = markerLeft) {
-  const start = messageInput.selectionStart;
-  const end = messageInput.selectionEnd;
-  const value = messageInput.value;
-  const selected = value.slice(start,end);
-  messageInput.value = value.slice(0,start) + markerLeft + selected + markerRight + value.slice(end);
-  const next = start + markerLeft.length + selected.length + markerRight.length;
-  messageInput.focus();
-  messageInput.setSelectionRange(next,next);
-}
-$("#boldButton").addEventListener("click", () => wrapSelection("**"));
-$("#italicButton").addEventListener("click", () => wrapSelection("_"));
-$("#codeButton").addEventListener("click", () => wrapSelection("`"));
+feed.addEventListener("click", (event) => {
+  const button = event.target.closest?.(".delete-entry");
+  if (!button) return;
+  void deleteEntry(button.dataset.entryId);
+});
 
 $("#countMinus").addEventListener("click", () => { state.count = Math.max(1,state.count-1); updateTray(); });
 $("#countPlus").addEventListener("click", () => { state.count = Math.min(50,state.count+1); updateTray(); });
