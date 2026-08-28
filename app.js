@@ -24,7 +24,7 @@ const SKILLS = [
 ].map(([name, attribute]) => ({ name, attribute }));
 
 const state = {
-  identity: { id: "preview-user", connectionId: "preview-connection", name: "Agente", color: "#b98b68", role: "PLAYER" },
+  identity: { id: "preview-user", connectionId: "preview-connection", name: "Agente", color: "#b51d26", role: "PLAYER" },
   displayName: "Agente",
   entries: [],
   roomId: "preview-room",
@@ -151,20 +151,20 @@ function rollDetailsHtml(entry) {
 
 function entryHtml(entry) {
   const author = escapeHtml(entry.authorName);
-  const color = escapeHtml(entry.authorColor || "#b98b68");
   const time = relativeTime(entry.createdAt);
+  const meta = `<header><span class="author-line"><span class="author-signal"></span><strong>${author}</strong></span><time>${time}</time></header>`;
   if (entry.kind === "chat") {
     return `<article class="message-card chat-card">
-      <header><strong style="border-color:${color}">${author}</strong><time>${time}</time></header>
+      ${meta}
       <div class="chat-text">${escapeHtml(entry.text)}</div>
     </article>`;
   }
   const naturalClass = entry.natural === 20 ? "natural-20" : entry.natural === 1 ? "natural-1" : "";
   return `<article class="message-card roll-card ${naturalClass}">
-    <header><strong style="border-color:${color}">${author}</strong><time>${time}</time></header>
+    ${meta}
     <div class="roll-title">${escapeHtml(entry.title)}</div>
     ${entry.subtitle ? `<div class="roll-subtitle">${escapeHtml(entry.subtitle)}</div>` : ""}
-    <div class="formula-box">${escapeHtml(displayFormula(entry.formula))}</div>
+    <div class="formula-box"><span class="readout-label">Fórmula</span>${escapeHtml(displayFormula(entry.formula))}</div>
     <div class="result-box">${entry.total}</div>
     ${rollDetailsHtml(entry)}
   </article>`;
@@ -193,7 +193,7 @@ function author() {
   return {
     authorId: state.identity.id,
     authorName: state.displayName || state.identity.name || "Agente",
-    authorColor: state.identity.color || "#b98b68",
+    authorColor: state.identity.color || "#b51d26",
   };
 }
 
@@ -347,9 +347,16 @@ function updateBuilderRule() {
 }
 
 const DICE = [4,6,8,10,12,20];
-const DIE_SHAPES = { 4:"△", 6:"□", 8:"◇", 10:"⬟", 12:"⬢", 20:"⬡" };
+const DIE_ICONS = {
+  4: `<svg viewBox="0 0 32 32" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.35" stroke-linecap="round" stroke-linejoin="round"><path d="M16 4 28 26H4Z"/><path d="M16 4v22M4 26l12-9 12 9"/></svg>`,
+  6: `<svg viewBox="0 0 32 32" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.35" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="5" width="22" height="22" rx="1"/><path d="M5 10 10 5M22 27l5-5M10 5l17 17M5 10l17 17"/></svg>`,
+  8: `<svg viewBox="0 0 32 32" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.35" stroke-linecap="round" stroke-linejoin="round"><path d="M16 3 28 16 16 29 4 16Z"/><path d="m16 3 6 13-6 13-6-13Z"/><path d="M4 16h24"/></svg>`,
+  10: `<svg viewBox="0 0 32 32" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.35" stroke-linecap="round" stroke-linejoin="round"><path d="M16 3 26 10l3 10-13 9L3 20l3-10Z"/><path d="M16 3 9 18l7 11 7-11Z"/><path d="M6 10l3 8-6 2M26 10l-3 8 6 2"/></svg>`,
+  12: `<svg viewBox="0 0 32 32" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.35" stroke-linecap="round" stroke-linejoin="round"><path d="m16 3 9 5 4 9-5 9-8 3-9-4-4-8 4-9Z"/><path d="m16 8 6 4 1 7-7 5-7-5 1-7Z"/><path d="M16 3v5M7 8l3 4M25 8l-3 4M29 17l-6 2M24 26l-8-2M7 25l2-6M3 17l6 2"/></svg>`,
+  20: `<svg viewBox="0 0 32 32" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.35" stroke-linecap="round" stroke-linejoin="round"><path d="m16 2 12 8v12l-12 8L4 22V10Z"/><path d="m16 2 5 14-5 14-5-14Z"/><path d="M4 10l17 6 7-6M4 22l12-6 12 6"/><path d="m11 16 5-5 5 5-5 5Z"/></svg>`,
+};
 function renderDiceRow() {
-  diceRow.innerHTML = DICE.map((die) => `<button class="die-button ${state.selectedSides === die ? "selected" : ""}" data-die="${die}" title="d${die}"><span class="die-shape">${DIE_SHAPES[die]}</span><small>d${die}</small></button>`).join("");
+  diceRow.innerHTML = DICE.map((die) => `<button class="die-button ${state.selectedSides === die ? "selected" : ""}" data-die="${die}" title="d${die}" aria-label="Selecionar d${die}"><span class="die-icon">${DIE_ICONS[die]}</span><small>d${die}</small></button>`).join("");
   diceRow.querySelectorAll(".die-button").forEach((button) => button.addEventListener("click", () => {
     state.selectedSides = Number(button.dataset.die);
     renderDiceRow();

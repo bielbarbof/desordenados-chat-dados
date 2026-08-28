@@ -1,7 +1,9 @@
 <svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" viewBox="0 0 64 64">
-  <rect width="64" height="64" rx="14" fill="#151218"/>
-  <path d="M32 7 52 20v24L32 57 12 44V20Z" fill="#eee9df" stroke="#b98b68" stroke-width="3"/>
-  <path d="m32 7 8 23-8 27-8-27Z" fill="#d7d0c4"/>
-  <circle cx="32" cy="31" r="8" fill="#151218"/>
-  <text x="32" y="35" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" font-weight="700" fill="#eee9df">20</text>
+  <rect width="64" height="64" rx="12" fill="#090A0C"/>
+  <path d="M32 7 51 18.5v27L32 57 13 45.5v-27Z" fill="#111318" stroke="#343A44" stroke-width="2"/>
+  <path d="m32 7 8.5 22.5L32 57l-8.5-27.5Z" fill="none" stroke="#7A818D" stroke-width="1.4"/>
+  <path d="M13 18.5 40.5 29.5 51 18.5M13 45.5 32 33l19 12.5M23.5 29.5 32 33l8.5-3.5" fill="none" stroke="#5B626D" stroke-width="1.2"/>
+  <path d="M32 7 51 18.5" stroke="#DB303B" stroke-width="2.4"/>
+  <circle cx="32" cy="33" r="7.5" fill="#090A0C" stroke="#B51D26" stroke-width="1.5"/>
+  <text x="32" y="36.5" text-anchor="middle" font-family="Arial, sans-serif" font-size="9.5" font-weight="800" fill="#F1F2F4">20</text>
 </svg>

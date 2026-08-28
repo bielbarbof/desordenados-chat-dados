@@ -3,18 +3,21 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <meta name="theme-color" content="#111014" />
+  <meta name="theme-color" content="#090a0c" />
   <title>Desordenados — Chat & Dados</title>
   <link rel="stylesheet" href="./styles.css" />
 </head>
 <body>
   <main id="app" class="app-shell">
     <header class="app-header">
-      <div class="identity-block">
+      <div class="brand-block">
+        <div class="brand-kicker"><span class="status-dot"></span>DESORDENADOS // DSO</div>
         <strong>CHAT & DADOS</strong>
         <button id="identityButton" class="identity-button" title="Alterar nome do personagem">Conectando…</button>
       </div>
-      <button id="testToggle" class="test-toggle">TESTE</button>
+      <button id="testToggle" class="test-toggle" type="button" aria-label="Abrir construtor de teste">
+        <span class="test-toggle-mark">+</span><span>TESTE</span>
+      </button>
     </header>
 
     <section id="feed" class="feed" aria-live="polite"></section>
@@ -22,8 +25,9 @@
     <section id="testBuilder" class="test-builder hidden" aria-label="Construtor de teste">
       <div class="builder-heading">
         <div>
+          <span class="panel-kicker">PROTOCOLO // TESTE</span>
           <strong>Teste de Ordem</strong>
-          <small>d20 em pool + bônus</small>
+          <small>Pool de d20 + bônus de perícia</small>
         </div>
         <button id="testClose" class="icon-button" aria-label="Fechar">×</button>
       </div>
@@ -54,35 +58,37 @@
     </section>
 
     <section class="composer-wrap">
-      <div class="format-row">
-        <button class="format-label" type="button">Formato⌄</button>
-        <span class="format-spacer"></span>
-        <button id="boldButton" type="button" title="Negrito"><b>B</b></button>
-        <button id="italicButton" type="button" title="Itálico"><i>I</i></button>
-        <button id="codeButton" type="button" title="Código">&lt;/&gt;</button>
+      <div class="composer-bar">
+        <span class="composer-status">MENSAGEM // <b>ENTER</b> ENVIA</span>
+        <div class="composer-tools" aria-label="Formatação de mensagem">
+          <button id="boldButton" type="button" title="Negrito"><b>B</b></button>
+          <button id="italicButton" type="button" title="Itálico"><i>I</i></button>
+          <button id="codeButton" type="button" title="Código">&lt;/&gt;</button>
+        </div>
       </div>
-      <textarea id="messageInput" placeholder="Digite uma mensagem\nou /r 3d20+5" aria-label="Mensagem"></textarea>
+      <textarea id="messageInput" placeholder="Mensagem…  /r 3d20+5" aria-label="Mensagem"></textarea>
       <div id="errorBanner" class="error-banner hidden"></div>
     </section>
 
-    <section class="dice-tray">
+    <section class="dice-tray" aria-label="Bandeja de dados">
+      <div class="tray-label"><span>ARSENAL DE DADOS</span><span class="tray-rule"></span></div>
       <div id="diceRow" class="dice-row"></div>
       <div class="tray-controls">
-        <div class="stepper">
-          <button id="countMinus" type="button">−</button>
+        <div class="stepper" aria-label="Quantidade de dados">
+          <button id="countMinus" type="button" aria-label="Diminuir quantidade">−</button>
           <strong id="diceCount">1</strong>
-          <button id="countPlus" type="button">+</button>
+          <button id="countPlus" type="button" aria-label="Aumentar quantidade">+</button>
         </div>
         <label class="modifier-input">
-          <span>bônus</span>
-          <input id="modifierInput" type="number" value="0" />
+          <span>BÔNUS</span>
+          <input id="modifierInput" type="number" value="0" aria-label="Bônus da rolagem" />
         </label>
         <button id="keepButton" class="keep-button" disabled title="Alternar entre manter o maior e o menor">KH</button>
-        <button id="rollButton" class="roll-button">Rolar</button>
+        <button id="rollButton" class="roll-button">ROLAR</button>
       </div>
     </section>
 
-    <div id="loading" class="loading-overlay">Conectando ao Owlbear…</div>
+    <div id="loading" class="loading-overlay"><span class="loading-mark"></span>Conectando ao Owlbear…</div>
   </main>
   <script type="module" src="./app.js"></script>
 </body>
