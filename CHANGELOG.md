@@ -1,12 +1,12 @@
 # Changelog
 
-## v0.3.1 — Polimento da Ficha Rápida
+## v0.3.2
+- Integração direta com o DSO System.
+- A aba **+ TESTE** recebe automaticamente AGI, FOR, INT, PRE, VIG, treinamento e bônus `Outros` do protagonista atribuído ao jogador.
+- O perfil é solicitado novamente ao entrar na sala ou quando a identidade do jogador muda.
+- Atualizações salvas no DSO System são refletidas na Ficha Rápida sem alterar o design final do DSO Chat.
 
-- Cabeçalho do painel simplificado para **FICHA RÁPIDA**.
-- Removidos os traços vermelhos decorativos no topo do chat e do painel lateral.
-- Ficha Rápida ganhou uma variação **Tech Noir vinho/vermelho escuro**, mantendo a base monocromática da DSO.
-- Siglas `AGI`, `FOR`, `INT`, `PRE` e `VIG` aumentadas para melhorar a leitura dentro do popover real do Owlbear.
-- Botão de apagar mensagem/rolagem agora executa a exclusão imediatamente, sem caixa de confirmação.
-- Ícone da lixeira corrigido e centralizado dentro do botão.
-- Ícone de ação da extensão substituído pelo mesmo **d20 wireframe** usado na Ficha Rápida.
-- Mantidas todas as funções da v0.3.0: painel lateral, configurações por jogador/sala, testes por perícia, treinamento colorido, chat, crítico em verde e sincronização de exclusões.
+## v0.3.1
+- Versão visual final da linha Tech Noir DSO.
+- Painel Ficha Rápida refinado.
+- Crítico d20, exclusão direta de mensagens e demais correções anteriores preservadas.

@@ -2,6 +2,7 @@ import OBR from "https://esm.unpkg.com/@owlbear-rodeo/sdk@3.1.0";
 
 const CHAT_CHANNEL = "com.desordenados.chat-dados/chat";
 const SYNC_CHANNEL = "com.desordenados.chat-dados/sync";
+const DSO_SYSTEM_SKILL_CHANNEL = "com.desordenados.dso-system/skill-bridge-v1";
 const MAX_HISTORY = 500;
 const MAX_SYNC = 200;
 
@@ -134,6 +135,35 @@ function loadTestConfig() {
 
 function saveTestConfig() {
   try { localStorage.setItem(testConfigKey(), JSON.stringify(state.testConfig)); } catch {}
+}
+
+function applyDsoSystemProfile(profile) {
+  if (!profile || typeof profile !== "object") return;
+  const next = normalizeTestConfig(state.testConfig || defaultTestConfig());
+  for (const key of Object.keys(next.attributes)) {
+    const value = Number(profile.attributes?.[key]);
+    if (Number.isFinite(value)) next.attributes[key] = Math.max(0, Math.min(10, Math.trunc(value)));
+  }
+  for (const skill of SKILLS) {
+    const incoming = profile.skills?.[skill.name];
+    if (!incoming || typeof incoming !== "object") continue;
+    const attribute = String(incoming.attribute || next.skills[skill.name].attribute).toUpperCase();
+    if (ATTRIBUTE_LABELS[attribute]) next.skills[skill.name].attribute = attribute;
+    const training = Number(incoming.training);
+    if ([0, 5, 10, 15].includes(training)) next.skills[skill.name].training = training;
+    const other = Number(incoming.other);
+    if (Number.isFinite(other)) next.skills[skill.name].other = Math.max(-99, Math.min(99, Math.trunc(other)));
+  }
+  state.testConfig = next;
+  saveTestConfig();
+  renderTestPanel();
+}
+
+async function requestDsoSystemProfile() {
+  if (!OBR.isAvailable) return;
+  try {
+    await OBR.broadcast.sendMessage(DSO_SYSTEM_SKILL_CHANNEL, { type: "request-profile" }, { destination: "REMOTE" });
+  } catch {}
 }
 
 function deletedKey() {
@@ -580,6 +610,13 @@ async function initializeOwlbear() {
       if (payload?.type === "delete" && payload.entryId) mergeDeletedIds([payload.entryId]);
     });
 
+    OBR.broadcast.onMessage(DSO_SYSTEM_SKILL_CHANNEL, (event) => {
+      const payload = event.data;
+      if (payload?.type !== "profile") return;
+      if (payload.targetConnectionId && payload.targetConnectionId !== state.identity.connectionId) return;
+      applyDsoSystemProfile(payload.profile);
+    });
+
     OBR.broadcast.onMessage(SYNC_CHANNEL, async (event) => {
       const payload = event.data;
       if (payload?.type === "request" && payload.requester && payload.requester !== state.identity.connectionId) {
@@ -602,8 +639,12 @@ async function initializeOwlbear() {
       loadAlias();
       loadTestConfig();
       renderTestPanel();
+      await requestDsoSystemProfile();
     });
 
+    await requestDsoSystemProfile();
+    setTimeout(() => { void requestDsoSystemProfile(); }, 1500);
+    setTimeout(() => { void requestDsoSystemProfile(); }, 5000);
     await OBR.broadcast.sendMessage(SYNC_CHANNEL, {
       type: "request",
       requester: state.identity.connectionId,
