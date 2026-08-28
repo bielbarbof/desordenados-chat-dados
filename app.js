@@ -33,6 +33,8 @@ const state = {
   count: 1,
   modifier: 0,
   keepMode: "highest",
+  testsOpen: false,
+  testConfig: null,
 };
 
 const $ = (selector) => document.querySelector(selector);
@@ -41,12 +43,11 @@ const identityButton = $("#identityButton");
 const loading = $("#loading");
 const errorBanner = $("#errorBanner");
 const messageInput = $("#messageInput");
-const testBuilder = $("#testBuilder");
-const skillSelect = $("#skillSelect");
-const attributeSelect = $("#attributeSelect");
-const attributeValue = $("#attributeValue");
-const skillBonus = $("#skillBonus");
-const builderRule = $("#builderRule");
+const appShell = $("#app");
+const testPanel = $("#testPanel");
+const testToggle = $("#testToggle");
+const attributeGrid = $("#attributeGrid");
+const skillRows = $("#skillRows");
 const diceRow = $("#diceRow");
 const diceCount = $("#diceCount");
 const modifierInput = $("#modifierInput");
@@ -90,6 +91,49 @@ function historyKey() {
 
 function aliasKey() {
   return `desordenados.chat-dados.alias.${state.roomId}.${state.identity.id}`;
+}
+
+function testConfigKey() {
+  return `desordenados.chat-dados.test-config.${state.roomId}.${state.identity.id}`;
+}
+
+function defaultTestConfig() {
+  return {
+    attributes: { AGI: 1, FOR: 1, INT: 1, PRE: 1, VIG: 1 },
+    skills: Object.fromEntries(SKILLS.map((skill) => [skill.name, { attribute: skill.attribute, training: 0, other: 0 }])),
+  };
+}
+
+function normalizeTestConfig(raw) {
+  const base = defaultTestConfig();
+  if (!raw || typeof raw !== "object") return base;
+  for (const key of Object.keys(base.attributes)) {
+    const value = Number(raw.attributes?.[key]);
+    if (Number.isFinite(value)) base.attributes[key] = Math.max(0, Math.min(10, Math.trunc(value)));
+  }
+  for (const skill of SKILLS) {
+    const incoming = raw.skills?.[skill.name];
+    if (!incoming || typeof incoming !== "object") continue;
+    const attribute = String(incoming.attribute || skill.attribute).toUpperCase();
+    if (ATTRIBUTE_LABELS[attribute]) base.skills[skill.name].attribute = attribute;
+    const training = Number(incoming.training);
+    if ([0, 5, 10, 15].includes(training)) base.skills[skill.name].training = training;
+    const other = Number(incoming.other);
+    if (Number.isFinite(other)) base.skills[skill.name].other = Math.max(-99, Math.min(99, Math.trunc(other)));
+  }
+  return base;
+}
+
+function loadTestConfig() {
+  try {
+    state.testConfig = normalizeTestConfig(JSON.parse(localStorage.getItem(testConfigKey()) || "null"));
+  } catch {
+    state.testConfig = defaultTestConfig();
+  }
+}
+
+function saveTestConfig() {
+  try { localStorage.setItem(testConfigKey(), JSON.stringify(state.testConfig)); } catch {}
 }
 
 function deletedKey() {
@@ -379,33 +423,89 @@ function changeAlias() {
   identityButton.textContent = `${clean} · ${state.identity.role === "GM" ? "Mestre" : "Jogador"}`;
 }
 
-function populateTestBuilder() {
-  skillSelect.innerHTML = SKILLS.map((skill) => `<option value="${skill.name}">${skill.name}</option>`).join("");
-  skillSelect.value = "Vontade";
-  updateAttributeOptions();
-  updateBuilderRule();
+function trainingClass(training) {
+  return `training-${training}`;
 }
 
-function selectedSkill() {
-  return SKILLS.find((skill) => skill.name === skillSelect.value) || SKILLS[0];
+function formatSigned(value) {
+  const number = Number(value || 0);
+  return number > 0 ? `+${number}` : String(number);
 }
 
-function updateAttributeOptions() {
-  const base = selectedSkill().attribute;
-  const current = attributeSelect.value || "AUTO";
-  attributeSelect.innerHTML = `<option value="AUTO">${ATTRIBUTE_LABELS[base]} (base)</option>` +
-    Object.entries(ATTRIBUTE_LABELS).map(([key,label]) => `<option value="${key}">${label}</option>`).join("");
-  attributeSelect.value = [...attributeSelect.options].some((o) => o.value === current) ? current : "AUTO";
+function renderAttributeGrid() {
+  if (!state.testConfig) return;
+  attributeGrid.innerHTML = Object.entries(ATTRIBUTE_LABELS).map(([key, label]) => `
+    <label class="attribute-cell" title="${escapeHtml(label)}">
+      <span>${key}</span>
+      <input class="attribute-score" data-attribute="${key}" type="number" min="0" max="10" value="${state.testConfig.attributes[key]}" inputmode="numeric" aria-label="${escapeHtml(label)}" />
+    </label>`).join("");
 }
 
-function resolvedAttribute() {
-  return attributeSelect.value === "AUTO" ? selectedSkill().attribute : attributeSelect.value;
+function skillRowHtml(skill) {
+  const config = state.testConfig.skills[skill.name];
+  const bonus = Number(config.training || 0) + Number(config.other || 0);
+  const attributeOptions = Object.keys(ATTRIBUTE_LABELS).map((key) => `<option value="${key}" ${config.attribute === key ? "selected" : ""}>${key}</option>`).join("");
+  const trainingOptions = [0,5,10,15].map((value) => `<option value="${value}" ${config.training === value ? "selected" : ""}>${value}</option>`).join("");
+  return `<div class="skill-row ${trainingClass(config.training)}" data-skill="${escapeHtml(skill.name)}">
+    <div class="skill-identity">
+      <button class="skill-roll" type="button" data-skill="${escapeHtml(skill.name)}" title="Rolar ${escapeHtml(skill.name)}" aria-label="Rolar ${escapeHtml(skill.name)}">
+        <span class="skill-d20">${DIE_ICONS[20]}</span>
+      </button>
+      <span class="skill-name">${escapeHtml(skill.name)}</span>
+    </div>
+    <label class="matrix-select-wrap">(<select class="skill-attribute" data-skill="${escapeHtml(skill.name)}" aria-label="Atributo de ${escapeHtml(skill.name)}">${attributeOptions}</select>)</label>
+    <output class="skill-bonus" data-bonus-for="${escapeHtml(skill.name)}">(${formatSigned(bonus)})</output>
+    <select class="skill-training" data-skill="${escapeHtml(skill.name)}" aria-label="Treino de ${escapeHtml(skill.name)}">${trainingOptions}</select>
+    <input class="skill-other" data-skill="${escapeHtml(skill.name)}" type="number" min="-99" max="99" value="${config.other}" inputmode="numeric" aria-label="Outros bônus de ${escapeHtml(skill.name)}" />
+  </div>`;
 }
 
-function updateBuilderRule() {
-  const value = Number(attributeValue.value || 0);
-  builderRule.textContent = value <= 0 ? "Atributo 0: 2d20 e mantém o menor." : `${value}d20 e mantém o maior.`;
-  $("#orderRollButton").textContent = `Rolar ${skillSelect.value} com ${ATTRIBUTE_LABELS[resolvedAttribute()]}`;
+function renderSkillRows() {
+  if (!state.testConfig) return;
+  skillRows.innerHTML = SKILLS.map(skillRowHtml).join("");
+}
+
+function renderTestPanel() {
+  renderAttributeGrid();
+  renderSkillRows();
+}
+
+function updateSkillRow(skillName) {
+  const skill = SKILLS.find((item) => item.name === skillName);
+  if (!skill) return;
+  const row = [...skillRows.querySelectorAll(".skill-row")].find((item) => item.dataset.skill === skillName);
+  if (!row) return;
+  const config = state.testConfig.skills[skillName];
+  row.classList.remove("training-0", "training-5", "training-10", "training-15");
+  row.classList.add(trainingClass(config.training));
+  const bonus = config.training + config.other;
+  const output = row.querySelector(".skill-bonus");
+  if (output) output.textContent = `(${formatSigned(bonus)})`;
+}
+
+async function setTestPanel(open) {
+  state.testsOpen = Boolean(open);
+  appShell.classList.toggle("tests-open", state.testsOpen);
+  testPanel.setAttribute("aria-hidden", state.testsOpen ? "false" : "true");
+  testToggle.setAttribute("aria-expanded", state.testsOpen ? "true" : "false");
+  const mark = testToggle.querySelector(".test-toggle-mark");
+  if (mark) mark.textContent = state.testsOpen ? "−" : "+";
+  if (!OBR.isAvailable) return;
+  try {
+    await OBR.action.setWidth(state.testsOpen ? 760 : 380);
+  } catch (error) {
+    console.warn("Não foi possível redimensionar o painel da extensão.", error);
+  }
+}
+
+async function rollSkill(skillName) {
+  const skill = SKILLS.find((item) => item.name === skillName);
+  if (!skill || !state.testConfig) return;
+  const config = state.testConfig.skills[skillName];
+  const attribute = config.attribute;
+  const attrValue = Number(state.testConfig.attributes[attribute] || 0);
+  const bonus = Number(config.training || 0) + Number(config.other || 0);
+  await publish(makeOrderRoll(skill.name, attribute, attrValue, bonus));
 }
 
 const DICE = [4,6,8,10,12,20];
@@ -458,6 +558,8 @@ async function initializeOwlbear() {
     state.deletedIds = loadDeletedIds();
     state.entries = loadHistory().filter((entry) => !state.deletedIds.has(entry.id));
     loadAlias();
+    loadTestConfig();
+    renderTestPanel();
     renderFeed();
     loading.classList.add("hidden");
     return;
@@ -466,9 +568,12 @@ async function initializeOwlbear() {
   OBR.onReady(async () => {
     state.identity = await getIdentity();
     state.roomId = OBR.room.id;
+    try { await OBR.action.setWidth(380); } catch {}
     state.deletedIds = loadDeletedIds();
     state.entries = loadHistory().filter((entry) => !state.deletedIds.has(entry.id));
     loadAlias();
+    loadTestConfig();
+    renderTestPanel();
     renderFeed();
     loading.classList.add("hidden");
 
@@ -498,6 +603,8 @@ async function initializeOwlbear() {
     OBR.player.onChange(async () => {
       state.identity = await getIdentity();
       loadAlias();
+      loadTestConfig();
+      renderTestPanel();
     });
 
     await OBR.broadcast.sendMessage(SYNC_CHANNEL, {
@@ -509,20 +616,46 @@ async function initializeOwlbear() {
 }
 
 // UI events
-$("#testToggle").addEventListener("click", () => testBuilder.classList.toggle("hidden"));
-$("#testClose").addEventListener("click", () => testBuilder.classList.add("hidden"));
+testToggle.addEventListener("click", () => { void setTestPanel(!state.testsOpen); });
+$("#testClose").addEventListener("click", () => { void setTestPanel(false); });
 identityButton.addEventListener("click", changeAlias);
-skillSelect.addEventListener("change", () => { updateAttributeOptions(); updateBuilderRule(); });
-attributeSelect.addEventListener("change", updateBuilderRule);
-attributeValue.addEventListener("input", updateBuilderRule);
-skillBonus.addEventListener("input", updateBuilderRule);
-$("#orderRollButton").addEventListener("click", async () => {
-  const skill = selectedSkill();
-  const attribute = resolvedAttribute();
-  const attrValue = Number(attributeValue.value || 0);
-  const bonus = Number(skillBonus.value || 0);
-  await publish(makeOrderRoll(skill.name, attribute, attrValue, bonus));
-  testBuilder.classList.add("hidden");
+
+attributeGrid.addEventListener("input", (event) => {
+  const input = event.target.closest?.(".attribute-score");
+  if (!input || !state.testConfig) return;
+  const key = input.dataset.attribute;
+  const value = Math.max(0, Math.min(10, Math.trunc(Number(input.value || 0))));
+  state.testConfig.attributes[key] = value;
+  saveTestConfig();
+});
+
+skillRows.addEventListener("change", (event) => {
+  if (!state.testConfig) return;
+  const target = event.target;
+  const skillName = target.dataset?.skill;
+  if (!skillName || !state.testConfig.skills[skillName]) return;
+  const config = state.testConfig.skills[skillName];
+  if (target.classList.contains("skill-attribute")) config.attribute = target.value;
+  if (target.classList.contains("skill-training")) config.training = [0,5,10,15].includes(Number(target.value)) ? Number(target.value) : 0;
+  if (target.classList.contains("skill-other")) config.other = Math.max(-99, Math.min(99, Math.trunc(Number(target.value || 0))));
+  saveTestConfig();
+  updateSkillRow(skillName);
+});
+
+skillRows.addEventListener("input", (event) => {
+  const target = event.target;
+  if (!target.classList?.contains("skill-other") || !state.testConfig) return;
+  const skillName = target.dataset.skill;
+  if (!skillName || !state.testConfig.skills[skillName]) return;
+  state.testConfig.skills[skillName].other = Math.max(-99, Math.min(99, Math.trunc(Number(target.value || 0))));
+  saveTestConfig();
+  updateSkillRow(skillName);
+});
+
+skillRows.addEventListener("click", (event) => {
+  const button = event.target.closest?.(".skill-roll");
+  if (!button) return;
+  void rollSkill(button.dataset.skill);
 });
 
 messageInput.addEventListener("keydown", (event) => {
@@ -555,7 +688,6 @@ $("#rollButton").addEventListener("click", async () => {
   await publish(entry);
 });
 
-populateTestBuilder();
 renderDiceRow();
 updateTray();
 initializeOwlbear().catch((error) => {

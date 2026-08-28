@@ -1,8 +1,8 @@
 {
   "name": "DSO Chat",
-  "version": "0.2.1",
+  "version": "0.3.0",
   "manifest_version": 1,
-  "description": "Chat e rolador de dados para Ordem Paranormal no Owlbear Rodeo — interface DSO Tech Noir.",
+  "description": "DSO Chat para Owlbear Rodeo — chat, rolador de dados e painel lateral de testes de Ordem Paranormal em interface Tech Noir.",
   "author": "Desordenados",
   "icon": "/icon.svg",
   "action": {

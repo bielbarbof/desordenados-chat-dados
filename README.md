@@ -1,45 +1,49 @@
-# DSO Chat v0.2.1
+# DSO Chat v0.3.0
 
-Extensão para Owlbear Rodeo com chat em tempo real e rolador adaptado para Ordem Paranormal, usando a identidade visual Tech Noir da DSO.
+Extensão para **Owlbear Rodeo** com chat, rolador de dados e uma ficha rápida de testes para **Ordem Paranormal RPG**, usando a identidade visual Tech Noir da DSO.
 
-## v0.2.1 — Refinamento do chat
+## Destaques
 
-- título simplificado para **DSO CHAT**;
-- removido o tópico `DESORDENADOS // DSO`;
-- removida a sigla visual `MSG` dos cards de mensagem;
-- removidos os controles de formatação `B`, `I` e `</>`;
-- resultado natural 20 agora transforma o card de rolagem em um estado crítico verde;
-- botão de lixeira aparece no hover das mensagens e rolagens que podem ser apagadas;
-- jogadores podem apagar apenas as próprias entradas;
-- Mestres podem apagar qualquer mensagem ou rolagem;
-- exclusões são sincronizadas com participantes conectados;
-- IDs apagados são guardados localmente e sincronizados no retorno à sala para reduzir o risco de mensagens excluídas reaparecerem;
-- todas as funções de chat, dados, Teste de Ordem, KH/KL, histórico local e comandos `/r` foram preservadas.
+- Chat sincronizado entre participantes da sala.
+- Histórico local de mensagens e rolagens.
+- Botão para apagar mensagens próprias; Mestre pode apagar qualquer entrada.
+- Bandeja de d4, d6, d8, d10, d12 e d20.
+- Pools de d20 mantêm automaticamente o maior; atributo 0 usa 2d20 e mantém o menor.
+- Natural 20 recebe tratamento visual verde de crítico.
+- Comandos como `/r 3d20+5`, `/r 2d20kl+10` e `/r 2d8+1d6+4`.
 
-## Atualizar a versão hospedada
+## Painel lateral +TESTE
 
-No mesmo repositório GitHub usado pelo Render, envie os arquivos desta versão por cima dos antigos e faça um novo commit. Depois, faça o deploy no Render. O endereço do `manifest.json` continua o mesmo.
+A v0.3.0 substitui o antigo popup por uma ficha rápida lateral.
 
-Arquivos para subir:
+No topo, configure os valores de **AGI, FOR, INT, PRE e VIG**. Cada linha de perícia permite escolher:
 
-- `_headers`
-- `app.js`
-- `icon.svg`
-- `index.html`
-- `manifest.json`
-- `styles.css`
-- `vercel.json`
-- `CHANGELOG.md`
-- `README.md`
+- **Dados** — qual atributo a perícia usa;
+- **Bônus** — valor calculado automaticamente como `Treino + Outros`;
+- **Treino** — 0, 5, 10 ou 15;
+- **Outros** — bônus ou penalidade manual.
 
-## Exclusão de mensagens
+Para rolar um teste, basta clicar no **d20 à esquerda do nome da perícia**.
 
-O histórico ainda é local, sem banco de dados central. A exclusão remove a entrada do histórico local e envia um evento de remoção aos jogadores conectados. A v0.2.1 também mantém uma lista local de IDs apagados e a inclui na sincronização de histórico.
+### Cores de treinamento
 
-## Rolagens
+- 0: padrão monocromático;
+- 5: verde;
+- 10: azul;
+- 15: amarelo.
 
-- Pools de múltiplos d20 mantêm o maior resultado por padrão (`kh`).
-- KH pode ser alternado para KL no botão da bandeja.
-- No construtor de Teste de Ordem, Atributo 0 rola `2d20kl`.
-- Outros dados são somados normalmente.
-- Comando manual: `/r 3d20+5`, `/r 2d20kl+10`, `/r 2d8+1d6+4`.
+As escolhas são salvas localmente por jogador e por sala.
+
+## Atualização no GitHub / Render
+
+Substitua os arquivos da versão anterior pelos desta pasta, faça **Commit changes** e publique o novo deploy no Render.
+
+O endereço de instalação no Owlbear continua o mesmo, por exemplo:
+
+```text
+https://desordenados-chat-dados.onrender.com/manifest.json
+```
+
+## Observação sobre histórico
+
+O histórico e a ficha rápida ainda usam armazenamento local do navegador. Não há banco de dados central nesta versão.
